@@ -1,37 +1,41 @@
-return function(encryptedString)
+local function decrypt(encryptedString)
+    print("⏳ Loading.")  -- Step 1
+    
     -- Extract shift, map, and encrypted data
-    local shift, map, encryptedData = encryptedString:match("^(%d+)!([^!]+)!!(.+)$")
-
+    local shift, map, encryptedData = encryptedString:match("([^!]+)!([^!]+)!(.+)")
+    
     if not shift or not map or not encryptedData then
-        return "Decryption failed (Invalid format): " .. tostring(encryptedString)
+        error("Decryption failed: Invalid encrypted string format.\nString: " .. tostring(encryptedString))
     end
-
-    shift = tonumber(shift)
-
+    
+    print("Step 1 Done")  -- Step 2
+    
+    -- Convert map into a table
     local mapTable = {}
-    for num in map:gmatch("%d+") do
+    for num in map:gmatch("[^,]+") do
         table.insert(mapTable, tonumber(num))
     end
-
-    -- Decrypt function
-    local function decryptChar(char, index)
-        local mappedIndex = mapTable[index] or 0
-        local decryptedValue = string.byte(char) - (shift % 256) - mappedIndex
-        return string.char((decryptedValue % 256) % 256)
-    end
-
-    -- Decrypt the data
+    
+    -- Decrypt each character
     local decryptedString = {}
     local index = 1
     for char in encryptedData:gmatch(".") do
-        table.insert(decryptedString, decryptChar(char, index))
+        local mappedIndex = mapTable[index] or 0
+        local decryptedValue = string.byte(char) - (tonumber(shift) % 256) - mappedIndex
+        local decryptedChar = string.char((decryptedValue % 256) % 256)
+        
+        print("Decrypting:", char, "->", decryptedChar)  -- Debugging step
+        table.insert(decryptedString, decryptedChar)
+        
         index = index + 1
     end
-
+    
+    print("Step 2 Done")  -- Step 3
+    
     local finalOutput = table.concat(decryptedString)
-
-    -- Ensure the decrypted output is printed
-    print("Decrypted Output:", finalOutput)
-
+    
+    print("Step 3 finished running.")  -- Final message
+    print("Decryption Finished:", finalOutput)
+    
     return finalOutput
 end

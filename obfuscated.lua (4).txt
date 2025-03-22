@@ -1,57 +1,36 @@
-return function(encText)
-    print("⏳ Loading.")
-
-    local function decryptString(encText)
-        print("Step 1 Done")
-
-        local shift, map, encryptedData = encText:match("([^!]+)!([^!]+)!(.+)")
-
-        if not shift or not map or not encryptedData then
-            error("Decryption failed: Invalid encrypted string format.\nString: " .. tostring(encText))
-        end
-
-        local shiftValue = tonumber(shift)
-        if not shiftValue then
-            error("Decryption failed: Invalid shift value.\nString: " .. tostring(encText))
-        end
-
-        local mapTable = {}
-        for num in map:gmatch("[^,]+") do
-            table.insert(mapTable, tonumber(num) or 0)
-        end
-
-        local decryptedString = {}
-        local index = 1
-
-        for char in encryptedData:gmatch(".") do
-            local mappedIndex = mapTable[index] or 0
-            local charByte = string.byte(char)
-
-            if not charByte then
-                error("Invalid character in encrypted data: " .. tostring(char))
-            end
-
-            local decryptedValue = (charByte - shiftValue - mappedIndex) % 256
-            table.insert(decryptedString, string.char(decryptedValue))
-
-            index = index + 1
-        end
-
-        local finalDecrypted = table.concat(decryptedString)
-        print("Step 2 Done")
-        print("Decrypted Output:\n" .. finalDecrypted) -- **This prints the decrypted output**
-        
-        if finalDecrypted == "" then
-            error("Decryption failed: Empty output.\nString: " .. tostring(encText))
-        end
-
-        return finalDecrypted
+local function customDecrypt(encryptedCode, shiftMapString)
+    -- Convert the shift map string back into a table
+    local shiftMap = {}
+    for shift in string.gmatch(shiftMapString, "([^,]+)") do
+        table.insert(shiftMap, tonumber(shift))
     end
 
-    local decryptedCode = decryptString(encText)
+    -- Split the encrypted code by "!" to get the individual encrypted byte values
+    local decrypted = {}
+    local parts = {}
+    for part in string.gmatch(encryptedCode, "([^!]+)") do
+        table.insert(parts, part)
+    end
+
+    -- Decrypt by reversing the shifts from the shift map
+    for i = 1, #parts do
+        local encryptedByte = tonumber(parts[i])  -- Get the encrypted byte
+        local shift = shiftMap[i]  -- Get the corresponding shift from the shift map
+        table.insert(decrypted, string.char(encryptedByte - shift))  -- Reverse the shift and convert to character
+    end
+
+    -- Return the decrypted string
+    return table.concat(decrypted)
+end
+
+-- Main decryption function
+local function main(encryptedCode, shiftMapString)
+    -- Decrypt the code
+    local decryptedCode = customDecrypt(encryptedCode, shiftMapString)
     
-    print("Step 3 finished running.")
-    return decryptedCode
+    -- Execute the decrypted code
+    loadstring(decryptedCode)()
 end
-return decryptedCode
-end
+
+-- Expecting the encrypted code and the shift map as arguments
+main(arg[1], arg[2])

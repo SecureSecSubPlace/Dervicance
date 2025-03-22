@@ -1,23 +1,25 @@
 return function(encryptedString)
-    local shift, map, encryptedData = encryptedString:match("^(%d+)%*(.-)%*(.+)$")
-    
-    if not shift or not map or not encryptedData then
+    if type(encryptedString) ~= "string" or not encryptedString:match("^(%d+)%*(.-)%*(.+)$") then
         error("Invalid encrypted string format")
     end
 
-    shift = tonumber(shift) or 0
-    local mapTable = {}
+    local shift, map, encryptedData = encryptedString:match("^(%d+)%*(.-)%*(.+)$")
+    shift = tonumber(shift)
 
-    -- Ensure map is valid before parsing
-    for num in (map or ""):gmatch("%d+") do
+    if not shift or not map or not encryptedData then
+        error("Failed to extract encryption components")
+    end
+
+    local mapTable = {}
+    for num in map:gmatch("%d+") do
         table.insert(mapTable, tonumber(num))
     end
 
     if #mapTable == 0 then
-        error("Invalid map data")
+        error("Decryption failed: Invalid map")
     end
 
-    -- Decrypt function
+    -- Decrypt function using the map and shift
     local function decryptChar(char, index)
         local mappedIndex = mapTable[index] or 0
         local decryptedValue = string.byte(char) - (shift % 256) - mappedIndex

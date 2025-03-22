@@ -1,8 +1,4 @@
 return function(encryptedString)
-    if type(encryptedString) ~= "string" then
-        error("Decryption failed: " .. tostring(encryptedString))
-    end
-
     -- Extract shift, map, and encrypted data
     local shift, map, encryptedData = encryptedString:match("^(%d+)!([^!]+)!!(.+)$")
     if not shift or not map or not encryptedData then

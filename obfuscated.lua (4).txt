@@ -1,31 +1,27 @@
-return function(encryptedData)
-    local shift, mapString, encryptedString = encryptedData:match("(%d+)::SecureSec::(.-)::SecureSec::(.-)")
-    shift = tonumber(shift)
+return function(encryptedString)
+    local shift, map, encryptedData = encryptedString:match("^(%d+)%*(.-)%*(.+)$")
+    shift = tonumber(shift) or 0
 
-    -- Convert map and encrypted values back to tables
-    local mapValues = {}
-    for value in mapString:gmatch("[^,]+") do
-        table.insert(mapValues, tonumber(value))
+    -- Convert the map back into an indexed table
+    local mapTable = {}
+    for num in map:gmatch("%d+") do
+        table.insert(mapTable, tonumber(num))
     end
 
-    local encryptedValues = {}
-    for value in encryptedString:gmatch("[^!]+") do
-        table.insert(encryptedValues, tonumber(value))
+    -- Decrypt function using the custom mapping
+    local function decryptChar(char, index)
+        local mappedIndex = mapTable[index] or 0
+        local decryptedValue = string.byte(char) - (shift % 256) - mappedIndex
+        return string.char((decryptedValue % 256) + 1)
     end
 
-    local decrypted = {}
-
-    for i, encryptedValue in ipairs(encryptedValues) do
-        local mappedValue = (encryptedValue - shift + 1000) % 1000  -- Reverse shift
-        local trueValue = mapValues[i]  -- Get original mapped value
-
-        for char, num in pairs(generateCustomMap(shift)) do
-            if num == trueValue then
-                table.insert(decrypted, char)  -- Restore character
-                break
-            end
-        end
+    -- Decrypt the data
+    local decryptedString = {}
+    local index = 1
+    for char in encryptedData:gmatch(".") do
+        table.insert(decryptedString, decryptChar(char, index))
+        index = index + 1
     end
 
-    loadstring(table.concat(decrypted))()  -- Execute the decrypted script
+    return table.concat(decryptedString)
 end

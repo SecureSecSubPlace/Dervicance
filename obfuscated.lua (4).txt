@@ -1,4 +1,4 @@
-return function(encryptedData)
+local function decrypt(encryptedData)
     local shift, mapString, encryptedString = encryptedData:match("(%d+)::SecureSec::(.-)::SecureSec::(.-)")
     shift = tonumber(shift)
 
@@ -19,13 +19,13 @@ return function(encryptedData)
         local mappedValue = (encryptedValue - shift + 1000) % 1000  -- Reverse shift
         local trueValue = mapValues[i]  -- Get original mapped value
 
-        if mappedValue == trueValue then
-            table.insert(decrypted, "?")  -- Placeholder for characters
-        else
-            table.insert(decrypted, "?")  -- Error handling
+        for char, num in pairs(generateCustomMap(shift)) do
+            if num == trueValue then
+                table.insert(decrypted, char)  -- Restore character
+                break
+            end
         end
     end
 
-    local finalScript = table.concat(decrypted)
-    loadstring(finalScript)()
+    loadstring(table.concat(decrypted))()  -- Execute the decrypted script
 end

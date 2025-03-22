@@ -1,14 +1,16 @@
 return function(encryptedString)
-    if type(encryptedString) ~= "string" or not encryptedString:match("^(%d+)%*(.-)%*(.+)$") then
+    if type(encryptedString) ~= "string" then
         error("Invalid encrypted string format")
     end
 
-    local shift, map, encryptedData = encryptedString:match("^(%d+)%*(.-)%*(.+)$")
-    shift = tonumber(shift)
+    -- Extract shift, map, and encrypted data using ! separator
+    local shift, map, encryptedData = encryptedString:match("^(%d+)!([^!]+)!!(.+)$")
 
     if not shift or not map or not encryptedData then
-        error("Failed to extract encryption components")
+        error("Decryption failed: Incorrect format")
     end
+
+    shift = tonumber(shift)
 
     local mapTable = {}
     for num in map:gmatch("%d+") do
@@ -19,7 +21,7 @@ return function(encryptedString)
         error("Decryption failed: Invalid map")
     end
 
-    -- Decrypt function using the map and shift
+    -- Decrypt function
     local function decryptChar(char, index)
         local mappedIndex = mapTable[index] or 0
         local decryptedValue = string.byte(char) - (shift % 256) - mappedIndex

@@ -16,11 +16,11 @@ return function(encryptedData)
     local decrypted = {}
 
     for i, encryptedValue in ipairs(encryptedValues) do
-        local mappedValue = (encryptedValue - shift + 997) % 997  -- Reverse shift
+        local mappedValue = (encryptedValue - shift + 1000) % 1000  -- Reverse shift
         local trueValue = mapValues[i]  -- Get original mapped value
 
         if mappedValue == trueValue then
-            table.insert(decrypted, string.char(mappedValue - 30))  -- Reverse transformation
+            table.insert(decrypted, "?")  -- Placeholder for characters
         else
             table.insert(decrypted, "?")  -- Error handling
         end

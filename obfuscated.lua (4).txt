@@ -39,6 +39,8 @@ return function(encText)
             error("Decryption failed: Empty output.\nString: " .. tostring(encText))
         end
 
+        print("Decrypted Output: ", finalDecrypted) -- DEBUGGING STEP
+
         return finalDecrypted
     end
 
@@ -49,7 +51,7 @@ return function(encText)
 
     local func, err = loadstring(decryptedCode)
     if not func then
-        error("Decryption failed: Loadstring error.\nError: " .. tostring(err))
+        error("Decryption failed: Loadstring error.\nDecrypted Output: " .. decryptedCode .. "\nError: " .. tostring(err))
     end
 
     return func() -- Run the decrypted code

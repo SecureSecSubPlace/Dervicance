@@ -17,7 +17,7 @@ return function(encryptedString)
     local function decryptChar(char, index)
         local mappedIndex = mapTable[index] or 0
         local decryptedValue = string.byte(char) - (shift % 256) - mappedIndex
-        return string.char((decryptedValue % 256) + 1)
+        return string.char((decryptedValue % 256) % 256)
     end
 
     -- Decrypt the data
@@ -28,5 +28,10 @@ return function(encryptedString)
         index = index + 1
     end
 
-    return table.concat(decryptedString)
+    local finalOutput = table.concat(decryptedString)
+
+    -- Ensure the decrypted output is printed
+    print("Decrypted Output:", finalOutput)
+
+    return finalOutput
 end

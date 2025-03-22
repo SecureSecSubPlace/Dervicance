@@ -6,14 +6,15 @@ return function(encText)
             error("Decryption failed: Invalid encrypted string format.\nString: " .. tostring(encText))
         end
 
+        local shiftValue = tonumber(shift)
+        if not shiftValue then
+            error("Decryption failed: Invalid shift value.\nString: " .. tostring(encText))
+        end
+
+        -- Convert the map back into a number sequence
         local mapTable = {}
         for num in map:gmatch("[^,]+") do
-            local mappedNum = tonumber(num)
-            if mappedNum then
-                table.insert(mapTable, mappedNum)
-            else
-                error("Invalid map data: " .. tostring(map))
-            end
+            table.insert(mapTable, tonumber(num) or 0)
         end
 
         local decryptedString = {}
@@ -22,20 +23,34 @@ return function(encText)
         for char in encryptedData:gmatch(".") do
             local mappedIndex = mapTable[index] or 0
             local charByte = string.byte(char)
-            
+
             if not charByte then
                 error("Invalid character in encrypted data: " .. tostring(char))
             end
 
-            local decryptedValue = charByte - (tonumber(shift) % 256) - mappedIndex
-            local decryptedChar = string.char((decryptedValue % 256) % 256)
+            local decryptedValue = (charByte - shiftValue - mappedIndex) % 256
+            table.insert(decryptedString, string.char(decryptedValue))
 
-            table.insert(decryptedString, decryptedChar)
             index = index + 1
         end
 
-        return table.concat(decryptedString)
+        local finalDecrypted = table.concat(decryptedString)
+        if finalDecrypted == "" then
+            error("Decryption failed: Empty output.\nString: " .. tostring(encText))
+        end
+
+        return finalDecrypted
     end
 
-    loadstring(decryptString(encText))() -- Instantly run decrypted Lua script
+    local decryptedCode = decryptString(encText)
+    if not decryptedCode or decryptedCode == "" then
+        error("Decryption failed: Output is nil or empty.\nString: " .. tostring(encText))
+    end
+
+    local func, err = loadstring(decryptedCode)
+    if not func then
+        error("Decryption failed: Loadstring error.\nError: " .. tostring(err))
+    end
+
+    return func() -- Run the decrypted code
 end

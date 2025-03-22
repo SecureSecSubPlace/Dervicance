@@ -1,4 +1,4 @@
-local function decrypt(encryptedData)
+return function(encryptedData)
     local shift, mapString, encryptedString = encryptedData:match("(%d+)::SecureSec::(.-)::SecureSec::(.-)")
     shift = tonumber(shift)
 

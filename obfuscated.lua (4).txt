@@ -1,5 +1,9 @@
 return function(encText)
+    print("⏳ Loading.")
+
     local function decryptString(encText)
+        print("Step 1 Done")
+
         local shift, map, encryptedData = encText:match("([^!]+)!([^!]+)!(.+)")
 
         if not shift or not map or not encryptedData then
@@ -11,7 +15,6 @@ return function(encText)
             error("Decryption failed: Invalid shift value.\nString: " .. tostring(encText))
         end
 
-        -- Convert the map back into a number sequence
         local mapTable = {}
         for num in map:gmatch("[^,]+") do
             table.insert(mapTable, tonumber(num) or 0)
@@ -35,24 +38,20 @@ return function(encText)
         end
 
         local finalDecrypted = table.concat(decryptedString)
+        print("Step 2 Done")
+        print("Decrypted Output:\n" .. finalDecrypted) -- **This prints the decrypted output**
+        
         if finalDecrypted == "" then
             error("Decryption failed: Empty output.\nString: " .. tostring(encText))
         end
-
-        print("Decrypted Output: ", finalDecrypted) -- DEBUGGING STEP
 
         return finalDecrypted
     end
 
     local decryptedCode = decryptString(encText)
-    if not decryptedCode or decryptedCode == "" then
-        error("Decryption failed: Output is nil or empty.\nString: " .. tostring(encText))
-    end
-
-    local func, err = loadstring(decryptedCode)
-    if not func then
-        error("Decryption failed: Loadstring error.\nDecrypted Output: " .. decryptedCode .. "\nError: " .. tostring(err))
-    end
-
-    return func() -- Run the decrypted code
+    
+    print("Step 3 finished running.")
+    return decryptedCode
+end
+return decryptedCode
 end

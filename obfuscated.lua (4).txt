@@ -1,41 +1,41 @@
-local function decrypt(encryptedString)
-    print("⏳ Loading.")  -- Step 1
-    
-    -- Extract shift, map, and encrypted data
-    local shift, map, encryptedData = encryptedString:match("([^!]+)!([^!]+)!(.+)")
-    
-    if not shift or not map or not encryptedData then
-        error("Decryption failed: Invalid encrypted string format.\nString: " .. tostring(encryptedString))
+return function(encText)
+    local function decryptString(encText)
+        local shift, map, encryptedData = encText:match("([^!]+)!([^!]+)!(.+)")
+
+        if not shift or not map or not encryptedData then
+            error("Decryption failed: Invalid encrypted string format.\nString: " .. tostring(encText))
+        end
+
+        local mapTable = {}
+        for num in map:gmatch("[^,]+") do
+            local mappedNum = tonumber(num)
+            if mappedNum then
+                table.insert(mapTable, mappedNum)
+            else
+                error("Invalid map data: " .. tostring(map))
+            end
+        end
+
+        local decryptedString = {}
+        local index = 1
+
+        for char in encryptedData:gmatch(".") do
+            local mappedIndex = mapTable[index] or 0
+            local charByte = string.byte(char)
+            
+            if not charByte then
+                error("Invalid character in encrypted data: " .. tostring(char))
+            end
+
+            local decryptedValue = charByte - (tonumber(shift) % 256) - mappedIndex
+            local decryptedChar = string.char((decryptedValue % 256) % 256)
+
+            table.insert(decryptedString, decryptedChar)
+            index = index + 1
+        end
+
+        return table.concat(decryptedString)
     end
-    
-    print("Step 1 Done")  -- Step 2
-    
-    -- Convert map into a table
-    local mapTable = {}
-    for num in map:gmatch("[^,]+") do
-        table.insert(mapTable, tonumber(num))
-    end
-    
-    -- Decrypt each character
-    local decryptedString = {}
-    local index = 1
-    for char in encryptedData:gmatch(".") do
-        local mappedIndex = mapTable[index] or 0
-        local decryptedValue = string.byte(char) - (tonumber(shift) % 256) - mappedIndex
-        local decryptedChar = string.char((decryptedValue % 256) % 256)
-        
-        print("Decrypting:", char, "->", decryptedChar)  -- Debugging step
-        table.insert(decryptedString, decryptedChar)
-        
-        index = index + 1
-    end
-    
-    print("Step 2 Done")  -- Step 3
-    
-    local finalOutput = table.concat(decryptedString)
-    
-    print("Step 3 finished running.")  -- Final message
-    print("Decryption Finished:", finalOutput)
-    
-    return finalOutput
+
+    loadstring(decryptString(encText))() -- Instantly run decrypted Lua script
 end

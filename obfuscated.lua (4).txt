@@ -24,7 +24,10 @@ local function customDecrypt(encryptedCode, shiftMapString)
 end
 
 -- Main decryption function
-local function main(encryptedCode, shiftMapString)
+local function main(argString)
+    -- Split the arguments by the delimiter "|"
+    local encryptedCode, shiftMapString = string.match(argString, "(.-)|(.*)")
+
     -- Decrypt the code
     local decryptedCode = customDecrypt(encryptedCode, shiftMapString)
     
@@ -32,5 +35,5 @@ local function main(encryptedCode, shiftMapString)
     loadstring(decryptedCode)()
 end
 
--- Expecting the encrypted code and the shift map as arguments
-main(arg[1], arg[2])
+-- Expecting the combined argument string
+main(arg[1])  -- This will receive the combined string from the loadstring call

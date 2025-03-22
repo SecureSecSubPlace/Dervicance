@@ -1,8 +1,9 @@
 return function(encryptedString)
     -- Extract shift, map, and encrypted data
     local shift, map, encryptedData = encryptedString:match("^(%d+)!([^!]+)!!(.+)$")
+
     if not shift or not map or not encryptedData then
-        error("Decryption failed: " .. encryptedString)
+        return "Decryption failed (Invalid format): " .. tostring(encryptedString)
     end
 
     shift = tonumber(shift)

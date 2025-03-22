@@ -1,13 +1,12 @@
 return function(encryptedString)
     if type(encryptedString) ~= "string" then
-        error("Invalid encrypted string format")
+        error("Decryption failed: " .. tostring(encryptedString))
     end
 
-    -- Extract shift, map, and encrypted data using ! separator
+    -- Extract shift, map, and encrypted data
     local shift, map, encryptedData = encryptedString:match("^(%d+)!([^!]+)!!(.+)$")
-
     if not shift or not map or not encryptedData then
-        error("Decryption failed: Incorrect format")
+        error("Decryption failed: " .. encryptedString)
     end
 
     shift = tonumber(shift)
@@ -15,10 +14,6 @@ return function(encryptedString)
     local mapTable = {}
     for num in map:gmatch("%d+") do
         table.insert(mapTable, tonumber(num))
-    end
-
-    if #mapTable == 0 then
-        error("Decryption failed: Invalid map")
     end
 
     -- Decrypt function

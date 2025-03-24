@@ -50,12 +50,15 @@ return function(encryptedStr)
     -- Join decrypted characters into the original script
     local decodedScript = table.concat(decrypted)
     print("✅ Decryption Successful!")
-print("🔹 Decrypted Code:\n" .. decodedScript)
+
+    -- Print the decrypted script for debugging
+    print("🔹 Decrypted Code:\n" .. decodedScript)
 
     -- 🎯 Execute the decrypted script
     local func, err = loadstring(decodedScript)
     if func then
-        return func()
+        print("✅ Running Decrypted Code...")
+        return func()  -- Execute the script
     else
         error("❌ Failed to execute script: " .. err)
     end

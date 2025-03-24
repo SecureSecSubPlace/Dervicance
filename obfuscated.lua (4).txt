@@ -1,65 +1,35 @@
-return function(encryptedStr)
-    if type(encryptedStr) ~= "string" or not encryptedStr:match("|") then
-        error("❌ Invalid encrypted input: " .. tostring(encryptedStr))
+local function splitString(str, delimiter)
+    local result = {}
+    for match in string.gmatch(str, "([^" .. delimiter .. "]+)") do
+        table.insert(result, match)
     end
+    return result
+end
 
-    -- Extract shift, map, and encrypted bytes
-    local shift, map, encryptedBytes = encryptedStr:match("^(%d+)|([^|]+)|(.+)$")
-    if not shift or not map or not encryptedBytes then
-        error("❌ Failed to parse encryption format")
-    end
+local function customDecrypt(encryptedStr)
+    local parts = splitString(encryptedStr, "|")
+    if #parts < 3 then error("❌ Decryption failed: Invalid format.") end
 
-    shift = tonumber(shift)
-    if not shift then error("❌ Invalid shift value") end
+    local shift = tonumber(parts[1]) -- Extract Unix timestamp shift
+    local map = splitString(parts[2], ",")
+    local encryptedBytes = splitString(parts[3], "!")
 
-    -- Parse map values (decryption instructions)
-    local mapValues = {}
-    for value in map:gmatch("%d+") do
-        table.insert(mapValues, tonumber(value))
-    end
+    if #map ~= #encryptedBytes then error("❌ Decryption failed: Map size mismatch.") end
 
-    -- Debug print
-    print("🔹 Shift Value:", shift)
-    print("🔹 Map Values:", table.concat(mapValues, ","))
-
-    -- Parse encrypted bytes and decrypt
     local decrypted = {}
-    local byteIndex = 1
-    for byte in encryptedBytes:gmatch("(%d+)!?") do
-        local numByte = tonumber(byte)
-        if numByte then
-            local charShift = mapValues[byteIndex] or 0
-
-            -- Debug print before processing
-            print(string.format("🔹 Byte #%d: %d (Shift: %d, CharShift: %d)", byteIndex, numByte, shift, charShift))
-
-            local originalByte = (numByte - shift - charShift) % 256
-
-            -- Ensure valid byte range
-            if originalByte < 0 or originalByte > 255 then
-                error(string.format("❌ Byte out of range: %d at index %d", originalByte, byteIndex))
-            end
-
-            table.insert(decrypted, string.char(originalByte))
-        else
-            error(string.format("❌ Corrupt encrypted byte at index %d", byteIndex))
-        end
-        byteIndex = byteIndex + 1
+    for i = 1, #encryptedBytes do
+        local encryptedByte = tonumber(encryptedBytes[i])
+        local mappedShift = tonumber(map[i])
+        local originalByte = encryptedByte - shift - mappedShift
+        table.insert(decrypted, string.char(originalByte))
     end
 
-    -- Join decrypted characters into the original script
-    local decodedScript = table.concat(decrypted)
-    print("✅ Decryption Successful!")
+    return table.concat(decrypted)
+end
 
-    -- Print the decrypted script for debugging
-    print("🔹 Decrypted Code:\n" .. decodedScript)
-
-    -- 🎯 Execute the decrypted script
-    local func, err = loadstring(decodedScript)
-    if func then
-        print("✅ Running Decrypted Code...")
-        return func()  -- Execute the script
-    else
-        error("❌ Failed to execute script: " .. err)
-    end
+-- **🚀 Fetch the encrypted string dynamically from Ioad()**
+getgenv().Ioad = function(encryptedInput)
+    local decryptedScript = customDecrypt(encryptedInput)
+    print("\n✅ Decryption Successful! Executing script...\n")
+    loadstring(decryptedScript)() -- Execute the decrypted script
 end

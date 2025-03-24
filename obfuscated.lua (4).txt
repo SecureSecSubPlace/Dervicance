@@ -1,15 +1,24 @@
 return function(encryptedStr)
+    if type(encryptedStr) ~= "string" or not encryptedStr:match("|") then
+        error("❌ Invalid encrypted input")
+    end
+
+    -- Extract shift, map, and encrypted data
     local shift, map, encryptedBytes = encryptedStr:match("^(%d+)|([^|]+)|(.+)$")
     if not shift or not map or not encryptedBytes then
-        error("Invalid encrypted format")
+        error("❌ Failed to parse encryption format")
     end
 
     shift = tonumber(shift)
+    if not shift then error("❌ Invalid shift value") end
+
+    -- Parse map values (decryption instructions)
     local mapValues = {}
     for value in map:gmatch("%d+") do
         table.insert(mapValues, tonumber(value))
     end
 
+    -- Parse encrypted bytes and decrypt
     local decrypted = {}
     local byteIndex = 1
     for byte in encryptedBytes:gmatch("(%d+)!?") do
@@ -17,11 +26,14 @@ return function(encryptedStr)
         if numByte then
             local charShift = mapValues[byteIndex] or 0
             local originalByte = (numByte - shift - charShift) % 256
-            table.insert(decrypted, string.char(math.max(0, originalByte))) -- Ensure valid byte range
+            table.insert(decrypted, string.char(originalByte))
+        else
+            error("❌ Corrupt encrypted byte at index " .. byteIndex)
         end
         byteIndex = byteIndex + 1
     end
 
+    -- Join decrypted characters into the original script
     local decodedScript = table.concat(decrypted)
     return decodedScript
 end

@@ -13,9 +13,12 @@ return function(encryptedStr)
     local decrypted = {}
     local byteIndex = 1
     for byte in encryptedBytes:gmatch("(%d+)!?") do
-        local charShift = mapValues[byteIndex] or 0
-        local originalByte = (tonumber(byte) - shift - charShift) % 256
-        table.insert(decrypted, string.char(originalByte))
+        local numByte = tonumber(byte)
+        if numByte then
+            local charShift = mapValues[byteIndex] or 0
+            local originalByte = (numByte - shift - charShift) % 256
+            table.insert(decrypted, string.char(math.max(0, originalByte))) -- Ensure valid byte range
+        end
         byteIndex = byteIndex + 1
     end
 
